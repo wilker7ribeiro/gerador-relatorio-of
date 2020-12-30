@@ -179,6 +179,3 @@ print('')
 print('============================== RESULTADO PARA PLANILHA ============================= ')
 print('')
 printPlanilha(resultadoTasks)
-
-
-#git log 649745097d8135f5b8eb6c1678ab9e2330401391...a30159ec30273f624a5efd4aa027e136e0ed8d54^1 --author=C1317576 --name-status
