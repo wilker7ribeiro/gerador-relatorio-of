@@ -18,15 +18,13 @@ delecoes = []
 filterTasks = inputArgs[4:]
 
 
-def replacer(match):
-    return match.group(2)+'$'+(match.group(5) or match.group(3))+'\n' + ('\n' if  match.group(1) else '')
 
 stdout,stderr = subprocess.Popen(['git', 'log', period, '--name-status', '--author', author], 
            stdout=subprocess.PIPE, 
            stderr=subprocess.STDOUT).communicate()
 
 result = stdout.decode('utf-8')
-data = re.sub(r'commit.*\n(.*\n)?Author.*\nDate:\s\s\s(.*)\n\n\s\s\s\s((Task )?(\d+)|.*).*\n\n', replacer, result)
+commits_data = re.findall('commit (.*\n)?Author: (.*)\nDate:   (.*)\n\n((.*\n)+?)\n(((A|M|R|D).+\n)+)', result)
 #incluir-agendamento-incluir-comando.component.ts
 
 class Commit:
@@ -64,11 +62,15 @@ def makeArquivo(linha):
     nome = parts[1] if len(parts) < 3 else parts[2]
     nomeAntigo = None if len(parts) < 3 else parts[1]
     return Arquivo(operacao, nome, nomeAntigo)
-def makeCommitFromString(commitString):
-    commitLinhas = commitString.splitlines()
-    taskData = commitLinhas[0].split('$')
-    arquivos = list(map(makeArquivo, commitLinhas[1:]))
-    return Commit(taskData[1], datetime.strptime(taskData[0], '%a %b %d %H:%M:%S %Y %z'), arquivos)
+def makeCommitFromString(commits_data):
+    commit_id = commits_data[0]
+    commit_author = commits_data[1]
+    commit_date_string = commits_data[2]
+    commit_text = commits_data[3].strip()
+    task_finds = re.findall('((T|t)ask )(\d+)', commit_text)
+    commit_task = commit_text if not task_finds else task_finds[0][2]
+    arquivos = list(map(makeArquivo, filter(None, commits_data[5].split('\n'))))
+    return Commit(commit_task, datetime.strptime(commit_date_string, '%a %b %d %H:%M:%S %Y %z'), arquivos)
 
 
 
@@ -84,8 +86,8 @@ def printResultadoTasks(resultado):
 
 def printPlanilha(resultadoTasks):
     itensPlanilha = [
-        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Criação JavaScript', ['.ts', '.js'], 'A', {}),
-        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Alteração JavaScript', ['.ts', '.js'], 'M', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Criação JavaScript', ['.ts', '.js', '.tsx'], 'A', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Alteração JavaScript', ['.ts', '.js', '.tsx'], 'M', {}),
         ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Criação de tela HTML ou XHTML ou JSP ou XML ou VTL ou XSL ou Swing ou AWT ou XUI ou PHP', ['.html'], 'A', {}),
         ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Alteração de tela HTML ou XHTML ou JSP ou XML ou VTL ou XSL ou Swing ou AWT ou XUI ou PHP', ['.html'], 'M', {}),
         ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Criação CSS ou SCSS', ['.css', '.scss', 'sass', 'less'], 'A', {}),
@@ -94,6 +96,13 @@ def printPlanilha(resultadoTasks):
         ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Alteração de Objetos de Integração e Negócio Java', ['.java'], 'M', {}),
         ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Criação de arquivo chave/valor ou tipo xml', ['.json', '.xml'], 'A', {}),
         ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Plataforma Distribuída 	Alteração de arquivo chave/valor ou tipo xml', ['.json', '.xml'], 'M', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Software de Infraestrutura 	Criação de módulo em Python', ['.py'], 'A', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Software de Infraestrutura 	Alteração de módulo em Python', ['.py'], 'M', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Software de Infraestrutura 	Elaboração e criação de arquivo de definição "Dockerfile"', ['Dockerfile'], 'A', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Software de Infraestrutura 	Alteração de arquivo de definição "Dockerfile"', ['Dockerfile'], 'M', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Implementação de aplicação Cloud	Construção/Alteração de arquivos requirements ou values para deploy no ambiente Cloud', ['values.yaml', 'requirements.yaml'], 'A', {}),
+        ItemPlanilha('IMPLEMENTAÇÃO DE SOFTWARE	Implementação de aplicação Cloud	Construção/Alteração de arquivos requirements ou values para deploy no ambiente Cloud', ['values.yaml', 'requirements.yaml'], 'M', {})
+        
     ]
 
     resultadoTasks
@@ -124,7 +133,7 @@ def printPlanilha(resultadoTasks):
     
 
 
-commits = list(map(makeCommitFromString, data.split('\n\n')))
+commits = list(map(makeCommitFromString, commits_data))
 commits.sort(key=lambda r: r.data, reverse=True)
 
 
