@@ -200,7 +200,6 @@ print('')
 
 print('============================== RESULTADO PARA PLANILHA ============================= ')
 print('')
-print_planilha(resultado_tasks)
 print('')
 print('')
 print('')
