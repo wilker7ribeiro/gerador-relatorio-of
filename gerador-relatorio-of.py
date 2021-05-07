@@ -122,7 +122,7 @@ def print_planilha(resultado_tasks, com_commit=False):
                 config.itens_tasks[task].append(arquivo)
             else:
                 print('Configuração não encontrada para arquivo: ' + arquivo.operacao + ' ' + arquivo.nome)
-
+    print('')
     for item_planilha in itens_planilha:
         soma = 0
         string = ''
@@ -188,21 +188,23 @@ for commit in commits:
 
 
 
-print('=============================== RESULTADO DAS TASKS ================================ ')
-print('')
-print_resultado_tasks(resultado_tasks)
-
-print('')
-print('=========================')
-print('=========================')
-print('=========================')
-print('')
-
-print('============================== RESULTADO PARA PLANILHA ============================= ')
-print('')
-print('')
-print('')
-print('')
+# print('=============================== RESULTADO DAS TASKS ================================ ')
+# print('')
+# print_resultado_tasks(resultado_tasks)
+# 
+# print('')
+# print('=========================')
+# print('=========================')
+# print('=========================')
+# print('')
+# 
+# print('============================== RESULTADO============================= ')
+# 
+# print_planilha(resultado_tasks, com_commit=False)
+# print('')
+# print('')
+# print('')
+# print('')
 print('============================== RESULTADO PARA PLANILHA ============================= ')
 print('')
 print_planilha(resultado_tasks, com_commit=True)
